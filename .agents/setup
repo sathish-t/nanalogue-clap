@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "==> Installing the Rust toolchain"
+if [[ -f "$HOME/.cargo/env" ]]; then
+  # shellcheck disable=SC1091
+  source "$HOME/.cargo/env"
+fi
+
+if ! command -v rustup >/dev/null 2>&1; then
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs |
+    sh -s -- -y --profile minimal --default-toolchain none
+
+  # The installer cannot update the environment of this running setup process.
+  # shellcheck disable=SC1091
+  source "$HOME/.cargo/env"
+fi
+
+rustup toolchain install stable --profile minimal --component rustfmt,clippy --no-self-update
+rustup default stable
+
+echo "==> Fetching locked dependencies"
+cargo fetch --locked
+
+echo "==> Precompiling nanalogue's clap feature set"
+cargo test --workspace --features derive,wrap_help --all-targets --no-run --locked
