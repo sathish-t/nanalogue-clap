@@ -24,7 +24,6 @@ Create your command-line parser, with all of the bells and whistles, declarative
 
 For more details, see:
 - [docs.rs](https://docs.rs/clap/latest/clap/)
-- [examples](examples/)
 
 ## Sponsors
 

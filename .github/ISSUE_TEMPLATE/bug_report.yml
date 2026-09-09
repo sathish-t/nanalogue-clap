@@ -1,5 +1,5 @@
 name: Bug report
-description: An issue with clap, clap_complete, clap_derive, or clap_mangen
+description: An issue with clap or clap_derive
 labels: ["C-bug", "S-triage"]
 body:
   - type: checkboxes

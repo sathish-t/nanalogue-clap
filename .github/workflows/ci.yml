@@ -23,7 +23,7 @@ jobs:
     permissions:
       contents: none
     name: CI
-    needs: [test, shell-integration, shell-integration-nu, check, ui, minimal-versions, lockfile, docs, rustfmt, clippy, cffconvert]
+    needs: [test, check, ui, minimal-versions, lockfile, docs, rustfmt, clippy, cffconvert]
     runs-on: ubuntu-latest
     if: "always()"
     steps:
@@ -77,42 +77,9 @@ jobs:
       run: make build-${{matrix.features}}
     - name: Test
       run: make test-${{matrix.features}}
-    - name: Test (benches)
-      run: make test-${{matrix.features}} ARGS='--workspace --benches'
     - name: Test (ultra-minimal)
       if: matrix.build == 'minimal'
       run: make test-minimal ARGS='--manifest-path Cargo.toml'
-    - name: Test dynamic completions
-      run: cargo test -p clap_complete -F unstable-dynamic
-  shell-integration:
-    name: Shell Integration
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v7
-    - name: Install Rust
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        toolchain: stable
-    - uses: Swatinem/rust-cache@v2
-    - name: Install shells
-      if: runner.os == 'Linux'
-      run: sudo apt-get install -y elvish fish zsh
-    - name: clap_complete
-      run: cargo test -p clap_complete -F unstable-dynamic -F unstable-shell-tests
-  shell-integration-nu:
-    name: Nushell Integration
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v7
-    - name: Install Rust
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        toolchain: stable
-    - uses: Swatinem/rust-cache@v2
-    - name: clap_complete_nu
-      run: cargo test -p clap_complete_nushell -F unstable-shell-tests
   check:
     name: Check
     runs-on: ubuntu-latest
@@ -191,7 +158,7 @@ jobs:
     - name: Downgrade dependencies to minimal versions
       run: cargo +nightly generate-lockfile -Z minimal-versions
     - name: Compile with minimal versions
-      run: cargo +stable check --workspace --all-features --locked --exclude clap_complete_nushell --exclude clap_bench
+      run: cargo +stable check --workspace --all-features --locked
   lockfile:
     runs-on: ubuntu-latest
     steps:

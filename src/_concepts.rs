@@ -29,7 +29,6 @@
 //! - If your applications needs to parse a string into arguments,
 //!   you will need to pick a syntax and do it yourself
 //!   - POSIX's shell syntax is a common choice and available in packages like [shlex](https://docs.rs/shlex)
-//!   - See also our [REPL cookbook entry][crate::_cookbook::repl]
 //! - On Windows, you will need to handle globbing yourself if desired
 //!   - [`wild`](https://docs.rs/wild) can help with that
 //!

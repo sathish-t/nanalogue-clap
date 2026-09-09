@@ -59,8 +59,8 @@
 //! ### How many approaches are there to create a parser?
 //!
 //! The following APIs are supported:
-//! - [Derive][crate::_derive::_tutorial]
-//! - [Builder][crate::_tutorial]
+//! - [Derive][crate::_derive]
+//! - [Builder][crate::Command]
 //!
 //! Previously, we supported:
 //! - [YAML](https://github.com/clap-rs/clap/issues/3087)
@@ -73,12 +73,12 @@
 //!
 //! ### When should I use the builder vs derive APIs?
 //!
-//! Our default answer is to use the [Derive API][crate::_derive::_tutorial]:
+//! Our default answer is to use the [Derive API][crate::_derive]:
 //! - Easier to read, write, and modify
 //! - Easier to keep the argument declaration and reading of argument in sync
 //! - Easier to reuse, e.g. [clap-verbosity-flag](https://crates.io/crates/clap-verbosity-flag)
 //!
-//! The [Builder API][crate::_tutorial] is a lower-level API that someone might want to use for
+//! The [Builder API][crate::Command] is a lower-level API that someone might want to use for
 //! - Faster compile times if you aren't already using other procedural macros
 //! - More flexibility, e.g. you can look up the [argument's values][crate::ArgMatches::get_many],
 //!   their [ordering with other arguments][crate::ArgMatches::indices_of], and [what set

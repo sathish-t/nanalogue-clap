@@ -18,7 +18,7 @@ _FEATURES_default =
 _FEATURES_wasm = --no-default-features --features "std help usage error-context suggestions" --features "deprecated derive cargo env unicode string"
 _FEATURES_full = --features "deprecated derive cargo env unicode string wrap_help unstable-ext"
 _FEATURES_next = ${_FEATURES_full} --features "unstable-v5 unstable-markdown"
-_FEATURES_debug = ${_FEATURES_full} --features debug --features clap_complete/debug
+_FEATURES_debug = ${_FEATURES_full} --features debug
 _FEATURES_release = ${_FEATURES_full} --release
 
 check-wasm:

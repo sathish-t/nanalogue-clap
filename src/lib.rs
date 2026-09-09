@@ -6,9 +6,8 @@
 //! > **Command Line Argument Parser for Rust**
 //!
 //! Quick Links:
-//! - Derive [tutorial][_derive::_tutorial] and [reference][_derive]
-//! - Builder [tutorial][_tutorial] and [reference][Command]
-//! - [Cookbook][_cookbook]
+//! - Derive [reference][_derive]
+//! - Builder [reference][Command]
 //! - [CLI Concepts][_concepts]
 //! - [FAQ][_faq]
 //! - [Discussions](https://github.com/clap-rs/clap/discussions)
@@ -18,7 +17,7 @@
 //! ## Aspirations
 //!
 //! - Out of the box, users get a polished CLI experience
-//!   - Including common argument behavior, help generation, suggested fixes for users, colored output, [shell completions](https://github.com/clap-rs/clap/tree/master/clap_complete), etc
+//!   - Including common argument behavior, help generation, suggested fixes for users, colored output, etc
 //! - Flexible enough to port your existing CLI interface
 //!   - However, we won't necessarily streamline support for each use case
 //! - Reasonable parse performance
@@ -35,34 +34,12 @@
 //! [argparse-benchmarks](https://github.com/rust-cli/argparse-benchmarks-rs) for
 //! CLI parsers optimized for other use cases.
 //!
-//! ## Example
-//!
-//! Run
-//! ```console
-//! $ cargo add clap --features derive
-//! ```
-//! *(See also [feature flag reference][_features])*
-//!
-//! Then define your CLI in `main.rs`:
-//! ```rust
-//! # #[cfg(feature = "derive")] {
-#![doc = include_str!("../examples/demo.rs")]
-//! # }
-//! ```
-//!
-//! And try it out:
-#![doc = include_str!("../examples/demo.md")]
-//!
-//! See also the derive [tutorial][_derive::_tutorial] and [reference][_derive]
-//!
 //! ### Related Projects
 //!
 //! Augment clap:
 //! - [wild](https://crates.io/crates/wild) for supporting wildcards (`*`) on Windows like you do Linux
 //! - [argfile](https://crates.io/crates/argfile) for loading additional arguments from a file (aka response files)
 //! - [shadow-rs](https://crates.io/crates/shadow-rs) for generating `Command::long_version`
-//! - [clap_mangen](https://crates.io/crates/clap_mangen) for generating man page source (roff)
-//! - [clap_complete](https://crates.io/crates/clap_complete) for shell completion support
 //! - [clap-i18n-richformatter](https://crates.io/crates/clap-i18n-richformatter) for i18n support with `clap::error::RichFormatter`
 //!
 //! CLI Helpers
@@ -95,15 +72,11 @@ pub use clap_derive::{self, Args, Parser, Subcommand, ValueEnum};
 #[cfg(feature = "unstable-doc")]
 pub mod _concepts;
 #[cfg(feature = "unstable-doc")]
-pub mod _cookbook;
-#[cfg(feature = "unstable-doc")]
 pub mod _derive;
 #[cfg(feature = "unstable-doc")]
 pub mod _faq;
 #[cfg(feature = "unstable-doc")]
 pub mod _features;
-#[cfg(feature = "unstable-doc")]
-pub mod _tutorial;
 
 #[doc = include_str!("../README.md")]
 #[cfg(doctest)]

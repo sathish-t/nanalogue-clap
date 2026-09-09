@@ -17,11 +17,6 @@
 //!
 //! To derive `clap` types, you need to enable the [`derive` feature flag][crate::_features].
 //!
-//! Example:
-//! ```rust
-#![doc = include_str!("../../examples/demo.rs")]
-//! ```
-//!
 //! Let's start by breaking down the anatomy of the derive attributes:
 //! ```rust
 //! use clap::{Parser, Args, Subcommand, ValueEnum};
@@ -91,8 +86,6 @@
 //!   - Subcommand arguments can be defined in a struct-variant or automatically flattened with a tuple-variant.
 //! - [`ValueEnum`][crate::ValueEnum] allows parsing a value directly into an `enum`, erroring on unsupported values.
 //!   - The derive doesn't work on enums that contain non-unit variants, unless they are skipped
-//!
-//! *See also the [derive tutorial][crate::_derive::_tutorial] and [cookbook][crate::_cookbook]*
 //!
 //! ## Attributes
 //!
@@ -192,9 +185,6 @@
 //!   [`Subcommand`][crate::Subcommand])
 //!   - When `Option<T>`, the subcommand becomes optional
 //!
-//! See [Configuring the Parser][_tutorial#configuring-the-parser] and
-//! [Subcommands][_tutorial#subcommands] from the tutorial.
-//!
 //! ### ArgGroup Attributes
 //!
 //! These correspond to the [`ArgGroup`][crate::ArgGroup] which is implicitly created for each
@@ -212,8 +202,6 @@
 //! Note:
 //! - For `struct`s, [`multiple = true`][crate::ArgGroup::multiple] is implied
 //! - `enum` support is tracked at [#2621](https://github.com/clap-rs/clap/issues/2621)
-//!
-//! See [Argument Relations][_tutorial#argument-relations] from the tutorial.
 //!
 //! ### Arg Attributes
 //!
@@ -267,16 +255,11 @@
 //!   - Requires field arg to be of type `Vec<T>` and `T` to implement `std::convert::Into<OsString>` or `#[arg(value_enum)]`
 //!   - `<expr>` must implement `IntoIterator<T>`
 //!
-//! See [Adding Arguments][_tutorial#adding-arguments] and [Validation][_tutorial#validation] from the
-//! tutorial.
-//!
 //! ### ValueEnum Attributes
 //!
 //! - `rename_all = <string_literal>`: Override default field / variant name case conversion for [`PossibleValue::new`][crate::builder::PossibleValue]
 //!   - When not present: `"kebab-case"`
 //!   - Available values: `"camelCase"`, `"kebab-case"`, `"PascalCase"`, `"SCREAMING_SNAKE_CASE"`, `"snake_case"`, `"lower"`, `"UPPER"`, `"verbatim"`
-//!
-//! See [Enumerated values][_tutorial#enumerated-values] from the tutorial.
 //!
 //! ### Possible Value Attributes
 //!
@@ -453,11 +436,6 @@
 //! structs that implement `Args`. Without the technique shown in this example, it would not be
 //! possible to use such crates with the builder API.
 //!
-//! For example:
-//! ```rust
-#![doc = include_str!("../../examples/derive_ref/augment_args.rs")]
-//! ```
-//!
 //! ### Using derived subcommands in a builder application
 //!
 //! When using the derive API, you can use `#[command(subcommand)]` inside the struct to add
@@ -466,11 +444,6 @@
 //!
 //! It uses the [`Subcommand::augment_subcommands`][crate::Subcommand::augment_subcommands] method
 //! to add the subcommands to the `Command` instance.
-//!
-//! For example:
-//! ```rust
-#![doc = include_str!("../../examples/derive_ref/augment_subcommands.rs")]
-//! ```
 //!
 //! ### Adding hand-implemented subcommands to a derived application
 //!
@@ -487,11 +460,6 @@
 //! [`augment_subcommands`][crate::Subcommand::augment_subcommands] ourselves, but the derive API
 //! calls it automatically since we used the `#[command(subcommand)]` attribute.
 //!
-//! For example:
-//! ```rust
-#![doc = include_str!("../../examples/derive_ref/hand_subcommand.rs")]
-//! ```
-//!
 //! ### Flattening hand-implemented args into a derived application
 //!
 //! When using the derive API, you can use `#[command(flatten)]` inside the struct to add arguments as
@@ -506,11 +474,6 @@
 //! [`augment_args`][crate::Args::augment_args] ourselves, but the derive API calls it
 //! automatically since we used the `#[command(flatten)]` attribute.
 //!
-//! For example:
-//! ```rust
-#![doc = include_str!("../../examples/derive_ref/flatten_hand_args.rs")]
-//! ```
-//!
 //! ## Tips
 //!
 //! - To get access to a [`Command`][crate::Command] call
@@ -518,7 +481,6 @@
 //!   [`Parser`][crate::Parser])
 //! - Proactively check for bad [`Command`][crate::Command] configurations by calling
 //!   [`Command::debug_assert`][crate::Command::debug_assert] in a test
-//!   ([example][_tutorial#testing])
 //! - Always remember to [document](#doc-comments) args and commands with `#![deny(missing_docs)]`
 //!   or `#[deny(clippy::missing_docs_in_private_items)]`
 
@@ -535,7 +497,3 @@
 #![doc(alias = "default_values_t")]
 #![doc(alias = "default_value_os_t")]
 #![doc(alias = "default_values_os_t")]
-
-pub mod _tutorial;
-#[doc(inline)]
-pub use crate::_cookbook;
