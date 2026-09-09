@@ -355,8 +355,7 @@ pub enum ArgAction {
 impl ArgAction {
     /// Returns whether this action accepts values on the command-line
     ///
-    /// [`default_values`][super::Arg::default_values] and [`env`][super::Arg::env] may still be
-    /// processed.
+    /// [`default_values`][super::Arg::default_values] may still be processed.
     pub fn takes_values(&self) -> bool {
         match self {
             Self::Set => true,

@@ -16,7 +16,7 @@ pub enum MatchesError {
     /// Argument not defined in [`Command`][crate::Command]
     #[non_exhaustive]
     UnknownArgument {
-        // Missing `id` but blocked on a public id type which will hopefully come with `unstable-v4`
+        // Missing `id` but blocked on a public id type
     },
 }
 

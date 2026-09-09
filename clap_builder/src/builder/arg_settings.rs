@@ -54,10 +54,6 @@ pub(crate) enum ArgSettings {
     TrailingVarArg,
     HideDefaultValue,
     IgnoreCase,
-    #[cfg(feature = "env")]
-    HideEnv,
-    #[cfg(feature = "env")]
-    HideEnvValues,
     HiddenShortHelp,
     HiddenLongHelp,
     Exclusive,

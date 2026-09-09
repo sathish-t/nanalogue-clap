@@ -31,10 +31,6 @@ pub(crate) const SUCCESS_CODE: i32 = 0;
 // - Python's `argparse` returns 2
 pub(crate) const USAGE_CODE: i32 = 2;
 
-#[cfg(not(feature = "unicode"))]
 pub(crate) fn eq_ignore_case(left: &str, right: &str) -> bool {
     left.eq_ignore_ascii_case(right)
 }
-
-#[cfg(feature = "unicode")]
-pub(crate) use unicase::eq as eq_ignore_case;

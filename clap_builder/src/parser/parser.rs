@@ -58,15 +58,11 @@ impl<'cmd> Parser<'cmd> {
             .parse(matcher, raw_args, args_cursor)
             .inspect_err(|_err| {
                 if self.cmd.is_ignore_errors_set() {
-                    #[cfg(feature = "env")]
-                    let _ = self.add_env(matcher);
                     let _ = self.add_defaults(matcher);
                 }
             }));
         ok!(self.resolve_pending(matcher));
 
-        #[cfg(feature = "env")]
-        ok!(self.add_env(matcher));
         ok!(self.add_defaults(matcher));
 
         Validator::new(self.cmd).validate(matcher)
@@ -1408,37 +1404,6 @@ impl<'cmd> Parser<'cmd> {
             debug!("Parser::remove_overrides:iter:{overrider_id:?}: removing");
             matcher.remove(overrider_id);
         }
-    }
-
-    #[cfg(feature = "env")]
-    fn add_env(&mut self, matcher: &mut ArgMatcher) -> ClapResult<()> {
-        debug!("Parser::add_env");
-
-        for arg in self.cmd.get_arguments() {
-            // Use env only if the arg was absent among command line args,
-            // early return if this is not the case.
-            if matcher.contains(&arg.id) {
-                debug!("Parser::add_env: Skipping existing arg `{arg}`");
-                continue;
-            }
-
-            debug!("Parser::add_env: Checking arg `{arg}`");
-            if let Some((_, Some(ref val))) = arg.env {
-                debug!("Parser::add_env: Found an opt with value={val:?}");
-                let arg_values = vec![val.to_owned()];
-                let trailing_idx = None;
-                let _ = ok!(self.react(
-                    None,
-                    ValueSource::EnvVariable,
-                    arg,
-                    arg_values,
-                    trailing_idx,
-                    matcher,
-                ));
-            }
-        }
-
-        Ok(())
     }
 
     fn add_defaults(&self, matcher: &mut ArgMatcher) -> ClapResult<()> {

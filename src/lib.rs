@@ -6,10 +6,7 @@
 //! > **Command Line Argument Parser for Rust**
 //!
 //! Quick Links:
-//! - Derive [reference][_derive]
 //! - Builder [reference][Command]
-//! - [CLI Concepts][_concepts]
-//! - [FAQ][_faq]
 //! - [Discussions](https://github.com/clap-rs/clap/discussions)
 //! - [CHANGELOG](https://github.com/clap-rs/clap/blob/v4.6.6/CHANGELOG.md) (includes major version migration
 //!   guides)
@@ -68,15 +65,6 @@ pub use clap_builder::*;
 #[cfg(feature = "derive")]
 #[doc(hidden)]
 pub use clap_derive::{self, Args, Parser, Subcommand, ValueEnum};
-
-#[cfg(feature = "unstable-doc")]
-pub mod _concepts;
-#[cfg(feature = "unstable-doc")]
-pub mod _derive;
-#[cfg(feature = "unstable-doc")]
-pub mod _faq;
-#[cfg(feature = "unstable-doc")]
-pub mod _features;
 
 #[doc = include_str!("../README.md")]
 #[cfg(doctest)]

@@ -93,7 +93,6 @@ impl Parse for ClapAttr {
 
         let magic = match name_str.as_str() {
             "rename_all" => Some(MagicAttrName::RenameAll),
-            "rename_all_env" => Some(MagicAttrName::RenameAllEnv),
             "skip" => Some(MagicAttrName::Skip),
             "next_display_order" => Some(MagicAttrName::NextDisplayOrder),
             "next_help_heading" => Some(MagicAttrName::NextHelpHeading),
@@ -105,7 +104,6 @@ impl Parse for ClapAttr {
             "short" => Some(MagicAttrName::Short),
             "value_parser" => Some(MagicAttrName::ValueParser),
             "action" => Some(MagicAttrName::Action),
-            "env" => Some(MagicAttrName::Env),
             "flatten" => Some(MagicAttrName::Flatten),
             "value_enum" => Some(MagicAttrName::ValueEnum),
             "from_global" => Some(MagicAttrName::FromGlobal),
@@ -157,7 +155,6 @@ pub(crate) enum MagicAttrName {
     Long,
     ValueParser,
     Action,
-    Env,
     Flatten,
     ValueEnum,
     FromGlobal,
@@ -169,7 +166,6 @@ pub(crate) enum MagicAttrName {
     LongHelp,
     Author,
     Version,
-    RenameAllEnv,
     RenameAll,
     Skip,
     DefaultValueT,

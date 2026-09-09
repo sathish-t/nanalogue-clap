@@ -80,15 +80,6 @@ fn main() {
                 .help("List of fruits")
                 .default_values(["apple", "banane", "orange"]),
         );
-    #[cfg(feature = "env")]
-    {
-        cmd = cmd.arg(
-            Arg::new("env_arg")
-                .help("Read from env var when arg is not present.")
-                .value_name("ENV")
-                .env("ENV_ARG"),
-        );
-    }
     #[cfg(feature = "color")]
     {
         use clap::builder::styling::{AnsiColor, Styles};

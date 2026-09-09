@@ -26,14 +26,10 @@ use crate::utils::{Sp, Ty, extract_doc_comment, format_doc_comment, inner_type, 
 /// Default casing style for generated arguments.
 pub(crate) const DEFAULT_CASING: CasingStyle = CasingStyle::Kebab;
 
-/// Default casing style for environment variables
-pub(crate) const DEFAULT_ENV_CASING: CasingStyle = CasingStyle::ScreamingSnake;
-
 #[derive(Clone)]
 pub(crate) struct Item {
     name: Name,
     casing: Sp<CasingStyle>,
-    env_casing: Sp<CasingStyle>,
     ty: Option<Type>,
     doc_comment: Vec<Method>,
     methods: Vec<Method>,
@@ -58,10 +54,9 @@ impl Item {
         let span = input.ident.span();
         let attrs = &input.attrs;
         let argument_casing = Sp::new(DEFAULT_CASING, span);
-        let env_casing = Sp::new(DEFAULT_ENV_CASING, span);
         let kind = Sp::new(Kind::Command(Sp::new(Ty::Other, span)), span);
 
-        let mut res = Self::new(name, ident, None, argument_casing, env_casing, kind);
+        let mut res = Self::new(name, ident, None, argument_casing, kind);
         let parsed_attrs = ClapAttr::parse_all(attrs)?;
         res.infer_kind(&parsed_attrs)?;
         res.push_attrs(&parsed_attrs)?;
@@ -78,10 +73,9 @@ impl Item {
         let span = input.ident.span();
         let attrs = &input.attrs;
         let argument_casing = Sp::new(DEFAULT_CASING, span);
-        let env_casing = Sp::new(DEFAULT_ENV_CASING, span);
         let kind = Sp::new(Kind::Command(Sp::new(Ty::Other, span)), span);
 
-        let mut res = Self::new(name, ident, None, argument_casing, env_casing, kind);
+        let mut res = Self::new(name, ident, None, argument_casing, kind);
         let parsed_attrs = ClapAttr::parse_all(attrs)?;
         res.infer_kind(&parsed_attrs)?;
         res.push_attrs(&parsed_attrs)?;
@@ -95,10 +89,9 @@ impl Item {
         let span = input.ident.span();
         let attrs = &input.attrs;
         let argument_casing = Sp::new(DEFAULT_CASING, span);
-        let env_casing = Sp::new(DEFAULT_ENV_CASING, span);
         let kind = Sp::new(Kind::Value, span);
 
-        let mut res = Self::new(name, ident, None, argument_casing, env_casing, kind);
+        let mut res = Self::new(name, ident, None, argument_casing, kind);
         let parsed_attrs = ClapAttr::parse_all(attrs)?;
         res.infer_kind(&parsed_attrs)?;
         res.push_attrs(&parsed_attrs)?;
@@ -119,7 +112,6 @@ impl Item {
     pub(crate) fn from_subcommand_variant(
         variant: &Variant,
         struct_casing: Sp<CasingStyle>,
-        env_casing: Sp<CasingStyle>,
     ) -> Result<Self, syn::Error> {
         let name = variant.ident.clone();
         let ident = variant.ident.clone();
@@ -133,14 +125,7 @@ impl Item {
             }
         };
         let kind = Sp::new(Kind::Command(ty), span);
-        let mut res = Self::new(
-            Name::Derived(name),
-            ident,
-            None,
-            struct_casing,
-            env_casing,
-            kind,
-        );
+        let mut res = Self::new(Name::Derived(name), ident, None, struct_casing, kind);
         let parsed_attrs = ClapAttr::parse_all(&variant.attrs)?;
         res.infer_kind(&parsed_attrs)?;
         res.push_attrs(&parsed_attrs)?;
@@ -173,7 +158,6 @@ impl Item {
     pub(crate) fn from_value_enum_variant(
         variant: &Variant,
         argument_casing: Sp<CasingStyle>,
-        env_casing: Sp<CasingStyle>,
     ) -> Result<Self, syn::Error> {
         let ident = variant.ident.clone();
         let span = variant.span();
@@ -183,7 +167,6 @@ impl Item {
             ident,
             None,
             argument_casing,
-            env_casing,
             kind,
         );
         let parsed_attrs = ClapAttr::parse_all(&variant.attrs)?;
@@ -199,7 +182,6 @@ impl Item {
     pub(crate) fn from_args_field(
         field: &Field,
         struct_casing: Sp<CasingStyle>,
-        env_casing: Sp<CasingStyle>,
     ) -> Result<Self, syn::Error> {
         let name = field.ident.clone().unwrap();
         let ident = field.ident.clone().unwrap();
@@ -211,7 +193,6 @@ impl Item {
             ident,
             Some(field.ty.clone()),
             struct_casing,
-            env_casing,
             kind,
         );
         let parsed_attrs = ClapAttr::parse_all(&field.attrs)?;
@@ -255,7 +236,6 @@ impl Item {
         ident: Ident,
         ty: Option<Type>,
         casing: Sp<CasingStyle>,
-        env_casing: Sp<CasingStyle>,
         kind: Sp<Kind>,
     ) -> Self {
         let group_id = Name::Derived(ident);
@@ -263,7 +243,6 @@ impl Item {
             name,
             ty,
             casing,
-            env_casing,
             doc_comment: vec![],
             methods: vec![],
             deprecations: vec![],
@@ -489,16 +468,6 @@ impl Item {
                         description: "`#[arg(action)]` is now the default and is no longer needed`".to_owned(),
                     });
                     self.action = Some(Action::Implicit(attr.name.clone()));
-                }
-
-                Some(MagicAttrName::Env) if attr.value.is_none() => {
-                    assert_attr_kind(attr, &[AttrKind::Arg])?;
-
-                    self.push_method(
-                        *attr.kind.get(),
-                        attr.name.clone(),
-                        self.name.clone().translate(*self.env_casing),
-                    );
                 }
 
                 Some(MagicAttrName::ValueEnum) if attr.value.is_none() => {
@@ -824,13 +793,6 @@ impl Item {
                     self.casing = CasingStyle::from_lit(lit)?;
                 }
 
-                Some(MagicAttrName::RenameAllEnv) => {
-                    assert_attr_kind(attr, &[AttrKind::Command, AttrKind::Arg])?;
-
-                    let lit = attr.lit_str_or_abort()?;
-                    self.env_casing = CasingStyle::from_lit(lit)?;
-                }
-
                 Some(MagicAttrName::Skip) if actual_attr_kind == AttrKind::Group => {
                     self.skip_group = true;
                 }
@@ -839,7 +801,6 @@ impl Item {
                 // Magic only for the default, otherwise just forward to the builder
                 | Some(MagicAttrName::Short)
                 | Some(MagicAttrName::Long)
-                | Some(MagicAttrName::Env)
                 | Some(MagicAttrName::About)
                 | Some(MagicAttrName::LongAbout)
                 | Some(MagicAttrName::LongHelp)
@@ -902,24 +863,12 @@ impl Item {
                 format_doc_comment(&lines, !self.verbatim_doc_comment, self.force_long_help);
             let short_name = format_ident!("{short_name}");
 
-            let is_value_kind = matches!(self.kind.get(), Kind::Value);
-            let short_method = if is_value_kind && cfg!(feature = "unstable-v5") {
-                Method::new(
-                    short_name,
-                    long_help
-                        .clone()
-                        .or(short_help)
-                        .map(|h| quote!(#h))
-                        .unwrap_or_else(|| quote!(None)),
-                )
-            } else {
-                Method::new(
-                    short_name,
-                    short_help
-                        .map(|h| quote!(#h))
-                        .unwrap_or_else(|| quote!(None)),
-                )
-            };
+            let short_method = Method::new(
+                short_name,
+                short_help
+                    .map(|h| quote!(#h))
+                    .unwrap_or_else(|| quote!(None)),
+            );
             self.doc_comment.push(short_method);
             if let Some(long_name) = long_name {
                 let long_name = format_ident!("{long_name}");
@@ -1075,10 +1024,6 @@ impl Item {
 
     pub(crate) fn casing(&self) -> Sp<CasingStyle> {
         self.casing
-    }
-
-    pub(crate) fn env_casing(&self) -> Sp<CasingStyle> {
-        self.env_casing
     }
 
     pub(crate) fn has_explicit_methods(&self) -> bool {
@@ -1289,6 +1234,7 @@ impl ToTokens for Method {
 }
 
 #[derive(Clone)]
+#[allow(dead_code)]
 pub(crate) struct Deprecation {
     pub(crate) span: Span,
     pub(crate) id: &'static str,
@@ -1312,28 +1258,7 @@ impl Deprecation {
 }
 
 impl ToTokens for Deprecation {
-    fn to_tokens(&self, ts: &mut TokenStream) {
-        let tokens = if cfg!(feature = "deprecated") {
-            let Deprecation {
-                span,
-                id,
-                version,
-                description,
-            } = self;
-            let span = *span;
-            let id = Ident::new(id, span);
-
-            quote_spanned!(span=> {
-                #[deprecated(since = #version, note = #description)]
-                fn #id() {}
-                #id();
-            })
-        } else {
-            quote!()
-        };
-
-        tokens.to_tokens(ts);
-    }
+    fn to_tokens(&self, _ts: &mut TokenStream) {}
 }
 
 fn assert_attr_kind(attr: &ClapAttr, possible_kind: &[AttrKind]) -> Result<(), syn::Error> {

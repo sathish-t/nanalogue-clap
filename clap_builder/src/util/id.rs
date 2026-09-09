@@ -1,6 +1,4 @@
 use crate::builder::Str;
-#[cfg(feature = "string")]
-use std::borrow::Cow;
 
 /// [`Arg`][crate::Arg] or [`ArgGroup`][crate::ArgGroup] identifier
 ///
@@ -47,20 +45,6 @@ impl From<&'_ Str> for Id {
     }
 }
 
-#[cfg(feature = "string")]
-impl From<String> for Id {
-    fn from(name: String) -> Self {
-        Self(name.into())
-    }
-}
-
-#[cfg(feature = "string")]
-impl From<&'_ String> for Id {
-    fn from(name: &'_ String) -> Self {
-        Self(name.into())
-    }
-}
-
 impl From<&'static str> for Id {
     fn from(name: &'static str) -> Self {
         Self(name.into())
@@ -76,13 +60,6 @@ impl From<&'_ &'static str> for Id {
 impl From<Id> for Str {
     fn from(name: Id) -> Self {
         name.0
-    }
-}
-
-#[cfg(feature = "string")]
-impl From<Cow<'static, str>> for Id {
-    fn from(name: Cow<'static, str>) -> Self {
-        Self(name.into())
     }
 }
 
@@ -169,27 +146,5 @@ impl PartialEq<Id> for String {
     #[inline]
     fn eq(&self, other: &Id) -> bool {
         PartialEq::eq(other, self)
-    }
-}
-
-#[cfg(test)]
-#[cfg(feature = "string")]
-mod tests {
-    use super::*;
-
-    #[test]
-    #[cfg(feature = "string")]
-    fn from_cow_borrowed() {
-        let cow = Cow::Borrowed("hello");
-        let id = Id::from(cow);
-        assert_eq!(id, Id::from("hello"));
-    }
-
-    #[test]
-    #[cfg(feature = "string")]
-    fn from_cow_owned() {
-        let cow = Cow::Owned("world".to_owned());
-        let id = Id::from(cow);
-        assert_eq!(id, Id::from("world"));
     }
 }

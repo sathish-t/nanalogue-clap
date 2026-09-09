@@ -149,18 +149,6 @@ where
     iter.next().filter(|_| iter.next().is_none())
 }
 
-#[cfg(feature = "unstable-v5")]
-fn get_vec_ty(ty: &Type, vec_ty: Ty, vecvec_ty: Ty) -> Option<Ty> {
-    subty_if_name(ty, "Vec").map(|subty| {
-        if is_generic_ty(subty, "Vec") {
-            vecvec_ty
-        } else {
-            vec_ty
-        }
-    })
-}
-
-#[cfg(not(feature = "unstable-v5"))]
 fn get_vec_ty(ty: &Type, vec_ty: Ty, _vecvec_ty: Ty) -> Option<Ty> {
     is_generic_ty(ty, "Vec").then_some(vec_ty)
 }

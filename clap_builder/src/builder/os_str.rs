@@ -1,35 +1,12 @@
 use crate::builder::Str;
-#[cfg(feature = "string")]
-use std::borrow::Cow;
 
 /// A UTF-8-encoded fixed string
-///
-/// <div class="warning">
-///
-/// **NOTE:** To support dynamic values (i.e. `OsString`), enable the `string`
-/// feature
-///
-/// </div>
 #[derive(Default, Clone, Eq, PartialEq, PartialOrd, Ord, Hash)]
 pub struct OsStr {
     name: Inner,
 }
 
 impl OsStr {
-    #[cfg(feature = "string")]
-    pub(crate) fn from_string(name: std::ffi::OsString) -> Self {
-        Self {
-            name: Inner::from_string(name),
-        }
-    }
-
-    #[cfg(feature = "string")]
-    pub(crate) fn from_ref(name: &std::ffi::OsStr) -> Self {
-        Self {
-            name: Inner::from_ref(name),
-        }
-    }
-
     pub(crate) fn from_static_ref(name: &'static std::ffi::OsStr) -> Self {
         Self {
             name: Inner::from_static_ref(name),
@@ -53,17 +30,6 @@ impl From<&'_ OsStr> for OsStr {
     }
 }
 
-#[cfg(feature = "string")]
-impl From<Str> for OsStr {
-    fn from(id: Str) -> Self {
-        match id.into_inner() {
-            crate::builder::StrInner::Static(s) => Self::from_static_ref(std::ffi::OsStr::new(s)),
-            crate::builder::StrInner::Owned(s) => Self::from_ref(std::ffi::OsStr::new(s.as_ref())),
-        }
-    }
-}
-
-#[cfg(not(feature = "string"))]
 impl From<Str> for OsStr {
     fn from(id: Str) -> Self {
         Self::from_static_ref(std::ffi::OsStr::new(id.into_inner().0))
@@ -73,34 +39,6 @@ impl From<Str> for OsStr {
 impl From<&'_ Str> for OsStr {
     fn from(id: &'_ Str) -> Self {
         id.clone().into()
-    }
-}
-
-#[cfg(feature = "string")]
-impl From<std::ffi::OsString> for OsStr {
-    fn from(name: std::ffi::OsString) -> Self {
-        Self::from_string(name)
-    }
-}
-
-#[cfg(feature = "string")]
-impl From<&'_ std::ffi::OsString> for OsStr {
-    fn from(name: &'_ std::ffi::OsString) -> Self {
-        Self::from_ref(name.as_os_str())
-    }
-}
-
-#[cfg(feature = "string")]
-impl From<String> for OsStr {
-    fn from(name: String) -> Self {
-        Self::from_string(name.into())
-    }
-}
-
-#[cfg(feature = "string")]
-impl From<&'_ String> for OsStr {
-    fn from(name: &'_ String) -> Self {
-        Self::from_ref(name.as_str().as_ref())
     }
 }
 
@@ -125,16 +63,6 @@ impl From<&'static str> for OsStr {
 impl From<&'_ &'static str> for OsStr {
     fn from(name: &'_ &'static str) -> Self {
         Self::from_static_ref((*name).as_ref())
-    }
-}
-
-#[cfg(feature = "string")]
-impl From<Cow<'static, str>> for OsStr {
-    fn from(cow: Cow<'static, str>) -> Self {
-        match cow {
-            Cow::Borrowed(s) => Self::from(s),
-            Cow::Owned(s) => Self::from(s),
-        }
     }
 }
 
@@ -252,41 +180,6 @@ impl PartialEq<OsStr> for std::ffi::OsString {
     }
 }
 
-#[cfg(feature = "string")]
-pub(crate) mod inner {
-    #[derive(Clone)]
-    pub(crate) enum Inner {
-        Static(&'static std::ffi::OsStr),
-        Owned(Box<std::ffi::OsStr>),
-    }
-
-    impl Inner {
-        pub(crate) fn from_string(name: std::ffi::OsString) -> Self {
-            Self::Owned(name.into_boxed_os_str())
-        }
-
-        pub(crate) fn from_ref(name: &std::ffi::OsStr) -> Self {
-            Self::Owned(Box::from(name))
-        }
-
-        pub(crate) fn from_static_ref(name: &'static std::ffi::OsStr) -> Self {
-            Self::Static(name)
-        }
-
-        pub(crate) fn as_os_str(&self) -> &std::ffi::OsStr {
-            match self {
-                Self::Static(s) => s,
-                Self::Owned(s) => s.as_ref(),
-            }
-        }
-
-        pub(crate) fn into_os_string(self) -> std::ffi::OsString {
-            self.as_os_str().to_owned()
-        }
-    }
-}
-
-#[cfg(not(feature = "string"))]
 pub(crate) mod inner {
     #[derive(Clone)]
     pub(crate) struct Inner(&'static std::ffi::OsStr);
@@ -338,27 +231,5 @@ impl std::hash::Hash for Inner {
     #[inline]
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.as_os_str().hash(state);
-    }
-}
-
-#[cfg(test)]
-#[cfg(feature = "string")]
-mod tests {
-    use super::*;
-
-    #[test]
-    #[cfg(feature = "string")]
-    fn from_cow_borrowed() {
-        let cow = Cow::Borrowed("hello");
-        let osstr = OsStr::from(cow);
-        assert_eq!(osstr, OsStr::from("hello"));
-    }
-
-    #[test]
-    #[cfg(feature = "string")]
-    fn from_cow_owned() {
-        let cow = Cow::Owned("world".to_owned());
-        let osstr = OsStr::from(cow);
-        assert_eq!(osstr, OsStr::from("world"));
     }
 }

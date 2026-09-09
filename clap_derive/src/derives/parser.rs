@@ -58,7 +58,7 @@ pub(crate) fn derive_parser(input: &DeriveInput) -> Result<TokenStream, syn::Err
             let fields = fields
                 .iter()
                 .map(|field| {
-                    let item = Item::from_args_field(field, item.casing(), item.env_casing())?;
+                    let item = Item::from_args_field(field, item.casing())?;
                     Ok((field, item))
                 })
                 .collect::<Result<Vec<_>, syn::Error>>()?;
@@ -71,8 +71,7 @@ pub(crate) fn derive_parser(input: &DeriveInput) -> Result<TokenStream, syn::Err
                 .variants
                 .iter()
                 .map(|variant| {
-                    let item =
-                        Item::from_subcommand_variant(variant, item.casing(), item.env_casing())?;
+                    let item = Item::from_subcommand_variant(variant, item.casing())?;
                     Ok((variant, item))
                 })
                 .collect::<Result<Vec<_>, syn::Error>>()?;

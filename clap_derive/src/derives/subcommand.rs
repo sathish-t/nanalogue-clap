@@ -32,8 +32,7 @@ pub(crate) fn derive_subcommand(input: &DeriveInput) -> Result<TokenStream, syn:
                 .variants
                 .iter()
                 .map(|variant| {
-                    let item =
-                        Item::from_subcommand_variant(variant, item.casing(), item.env_casing())?;
+                    let item = Item::from_subcommand_variant(variant, item.casing())?;
                     Ok((variant, item))
                 })
                 .collect::<Result<Vec<_>, syn::Error>>()?;

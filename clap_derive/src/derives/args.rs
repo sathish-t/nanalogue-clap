@@ -45,7 +45,7 @@ pub(crate) fn derive_args(input: &DeriveInput) -> Result<TokenStream, syn::Error
             let fields = fields
                 .iter()
                 .map(|field| {
-                    let item = Item::from_args_field(field, item.casing(), item.env_casing())?;
+                    let item = Item::from_args_field(field, item.casing())?;
                     Ok((field, item))
                 })
                 .collect::<Result<Vec<_>, syn::Error>>()?;
@@ -761,12 +761,6 @@ fn gen_parsers(
     Ok(genned)
 }
 
-#[cfg(feature = "raw-deprecated")]
-pub(crate) fn raw_deprecated() -> TokenStream {
-    quote! {}
-}
-
-#[cfg(not(feature = "raw-deprecated"))]
 pub(crate) fn raw_deprecated() -> TokenStream {
     quote! {
         #![allow(deprecated)]  // Assuming any deprecation in here will be related to a deprecation in `Args`
@@ -782,7 +776,7 @@ pub(crate) fn collect_args_fields<'a>(
         .named
         .iter()
         .map(|field| {
-            let item = Item::from_args_field(field, item.casing(), item.env_casing())?;
+            let item = Item::from_args_field(field, item.casing())?;
             Ok((field, item))
         })
         .collect()

@@ -2208,7 +2208,7 @@ impl TypedValueParser for UnknownArgumentValueParser {
             ValueSource::DefaultValue => {
                 TypedValueParser::parse_ref_(&StringValueParser::new(), cmd, arg, _value, source)
             }
-            ValueSource::EnvVariable | ValueSource::CommandLine => {
+            ValueSource::CommandLine => {
                 let arg = match arg {
                     Some(arg) => arg.to_string(),
                     None => "..".to_owned(),

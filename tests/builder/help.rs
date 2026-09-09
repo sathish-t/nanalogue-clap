@@ -1267,7 +1267,6 @@ Options:
 #[test]
 #[cfg(feature = "wrap_help")]
 fn issue_688_hide_pos_vals() {
-    #[cfg(not(feature = "unstable-v5"))]
     let expected = str![[r#"
 Usage: ctest [OPTIONS]
 
@@ -1275,19 +1274,6 @@ Options:
       --filter <filter>  Sets the filter, or sampling method, to use for interpolation when resizing the particle
                          images. The default is Linear (Bilinear). [possible values: Nearest, Linear, Cubic, Gaussian,
                          Lanczos3]
-  -h, --help             Print help
-  -V, --version          Print version
-
-"#]];
-
-    #[cfg(feature = "unstable-v5")]
-    let expected = str![[r#"
-Usage: ctest [OPTIONS]
-
-Options:
-      --filter <filter>  Sets the filter, or sampling method, to use for interpolation when resizing
-                         the particle images. The default is Linear (Bilinear). [possible values:
-                         Nearest, Linear, Cubic, Gaussian, Lanczos3]
   -h, --help             Print help
   -V, --version          Print version
 
@@ -1530,7 +1516,6 @@ Options:
 
 #[test]
 fn ripgrep_usage_using_templates() {
-    #[cfg(not(feature = "unstable-v5"))]
     let cmd = Command::new("ripgrep")
         .version("0.5")
         .override_usage(
@@ -1543,26 +1528,6 @@ fn ripgrep_usage_using_templates() {
         .help_template(
             "\
 {bin} {version}
-
-Usage: {usage}
-
-Options:
-{options}",
-        );
-
-    #[cfg(feature = "unstable-v5")]
-    let cmd = Command::new("ripgrep")
-        .version("0.5")
-        .override_usage(
-            "\
-       rg [OPTIONS] <pattern> [<path> ...]
-       rg [OPTIONS] [-e PATTERN | -f FILE ]... [<path> ...]
-       rg [OPTIONS] --files [<path> ...]
-       rg [OPTIONS] --type-list",
-        )
-        .help_template(
-            "\
-{name} {version}
 
 Usage: {usage}
 
@@ -2063,25 +2028,12 @@ fn escaped_whitespace_values() {
             .value_parser(["normal", " ", "\n", "\t", "other"]),
     );
 
-    #[cfg(not(feature = "unstable-v5"))]
     let expected = str![[r#"
 Usage: default [OPTIONS]
 
 Options:
       --arg <argument>  Pass an argument to the program. [default: "\n"] [possible values: normal, " ", "\n", "\t",
                         other]
-  -h, --help            Print help
-  -V, --version         Print version
-
-"#]];
-
-    #[cfg(feature = "unstable-v5")]
-    let expected = str![[r#"
-Usage: default [OPTIONS]
-
-Options:
-      --arg <argument>  Pass an argument to the program. [default: "\n"] [possible values: normal, "
-                        ", "\n", "\t", other]
   -h, --help            Print help
   -V, --version         Print version
 

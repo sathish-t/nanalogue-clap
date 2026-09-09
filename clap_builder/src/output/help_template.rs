@@ -118,7 +118,6 @@ impl<'cmd, 'writer> HelpTemplate<'cmd, 'writer> {
         }
     }
 
-    #[cfg(not(feature = "unstable-v5"))]
     fn term_w(cmd: &'cmd Command) -> usize {
         match cmd.get_term_width() {
             Some(0) => usize::MAX,
@@ -133,26 +132,6 @@ impl<'cmd, 'writer> HelpTemplate<'cmd, 'writer> {
                 cmp::min(current_width, max_width)
             }
         }
-    }
-
-    #[cfg(feature = "unstable-v5")]
-    fn term_w(cmd: &'cmd Command) -> usize {
-        let term_w = match cmd.get_term_width() {
-            Some(0) => usize::MAX,
-            Some(w) => w,
-            None => {
-                let (current_width, _h) = dimensions();
-                current_width.unwrap_or(usize::MAX)
-            }
-        };
-
-        let max_term_w = match cmd.get_max_term_width() {
-            Some(0) => usize::MAX,
-            Some(mw) => mw,
-            None => 100,
-        };
-
-        cmp::min(term_w, max_term_w)
     }
 
     /// Write help to stream for the parser in the format defined by the template.
@@ -174,7 +153,6 @@ impl<'cmd, 'writer> HelpTemplate<'cmd, 'writer> {
                     "name" => {
                         self.write_display_name();
                     }
-                    #[cfg(not(feature = "unstable-v5"))]
                     "bin" => {
                         self.write_bin_name();
                     }
@@ -271,7 +249,6 @@ impl HelpTemplate<'_, '_> {
     }
 
     /// Writes binary name of a Parser Object to the wrapped stream.
-    #[cfg(not(feature = "unstable-v5"))]
     fn write_bin_name(&mut self) {
         debug!("HelpTemplate::write_bin_name");
 
@@ -760,32 +737,6 @@ impl HelpTemplate<'_, '_> {
         let val_sep = format!("{ctx}, {ctx:#}"); // context values styled separator
 
         let mut spec_vals = Vec::new();
-        #[cfg(feature = "env")]
-        if let Some(ref env) = a.env {
-            if !a.is_hide_env_set() {
-                debug!(
-                    "HelpTemplate::spec_vals: Found environment variable...[{:?}:{:?}]",
-                    env.0, env.1
-                );
-                let env_val = if !a.is_hide_env_values_set() {
-                    format!(
-                        "={}",
-                        env.1
-                            .as_ref()
-                            .map(|s| s.to_string_lossy())
-                            .unwrap_or_default()
-                    )
-                } else {
-                    Default::default()
-                };
-                let env_info = format!(
-                    "{ctx}[env: {ctx:#}{ctx_val}{}{}{ctx_val:#}{ctx}]{ctx:#}",
-                    env.0.to_string_lossy(),
-                    env_val
-                );
-                spec_vals.push(env_info);
-            }
-        }
         if a.is_takes_value_set() && !a.is_hide_default_value_set() && !a.default_vals.is_empty() {
             debug!(
                 "HelpTemplate::spec_vals: Found default value...[{:?}]",
@@ -1160,32 +1111,5 @@ mod test {
 
         let help = String::from("foo bar baz");
         assert_eq!(wrap(&help, 5), "foo\nbar\nbaz");
-    }
-
-    #[test]
-    #[cfg(feature = "unicode")]
-    fn display_width_handles_non_ascii() {
-        use super::*;
-
-        // Popular Danish tongue-twister, the name of a fruit dessert.
-        let text = "rødgrød med fløde";
-        assert_eq!(display_width(text), 17);
-        // Note that the string width is smaller than the string
-        // length. This is due to the precomposed non-ASCII letters:
-        assert_eq!(text.len(), 20);
-    }
-
-    #[test]
-    #[cfg(feature = "unicode")]
-    fn display_width_handles_emojis() {
-        use super::*;
-
-        let text = "😂";
-        // There is a single `char`...
-        assert_eq!(text.chars().count(), 1);
-        // but it is double-width:
-        assert_eq!(display_width(text), 2);
-        // This is much less than the byte length:
-        assert_eq!(text.len(), 4);
     }
 }

@@ -107,8 +107,6 @@ pub struct Command {
     external_value_parser: Option<super::ValueParser>,
     long_help_exists: bool,
     deferred: Option<fn(Command) -> Command>,
-    #[cfg(feature = "unstable-ext")]
-    ext: Extensions,
     app_ext: Extensions,
 }
 
@@ -119,8 +117,6 @@ impl Command {
     /// It is common, but not required, to use binary name as the `name`. This
     /// name will only be displayed to the user when they request to print
     /// version or help and usage information.
-    ///
-    /// See also [`command!`](crate::command!) and [`crate_name!`](crate::crate_name!).
     ///
     /// # Examples
     ///
@@ -261,8 +257,7 @@ impl Command {
     ///
     /// # Examples
     ///
-    #[cfg_attr(feature = "string", doc = "```")]
-    #[cfg_attr(not(feature = "string"), doc = "```ignore")]
+    /// ```ignore
     /// # use clap_builder as clap;
     /// # use clap::{Command, Arg, ArgAction};
     ///
@@ -392,8 +387,7 @@ impl Command {
     ///
     /// # Examples
     ///
-    #[cfg_attr(feature = "string", doc = "```")]
-    #[cfg_attr(not(feature = "string"), doc = "```ignore")]
+    /// ```ignore
     /// # use clap_builder as clap;
     /// # use clap::{Command, Arg, ArgAction};
     ///
@@ -1044,10 +1038,6 @@ impl Command {
     }
 
     #[doc(hidden)]
-    #[cfg_attr(
-        feature = "deprecated",
-        deprecated(since = "4.0.0", note = "Replaced with `Command::render_help`")
-    )]
     pub fn write_help<W: io::Write>(&mut self, w: &mut W) -> io::Result<()> {
         self._build_self(false);
 
@@ -1059,10 +1049,6 @@ impl Command {
     }
 
     #[doc(hidden)]
-    #[cfg_attr(
-        feature = "deprecated",
-        deprecated(since = "4.0.0", note = "Replaced with `Command::render_long_help`")
-    )]
     pub fn write_long_help<W: io::Write>(&mut self, w: &mut W) -> io::Result<()> {
         self._build_self(false);
 
@@ -1150,14 +1136,6 @@ impl Command {
         self._build_self(false);
 
         Usage::new(self).create_usage_with_title(&[])
-    }
-
-    /// Extend [`Command`] with [`CommandExt`] data
-    #[cfg(feature = "unstable-ext")]
-    #[allow(clippy::should_implement_trait)]
-    pub fn add<T: CommandExt + Extension>(mut self, tagged: T) -> Self {
-        self.ext.set(tagged);
-        self
     }
 }
 
@@ -1375,9 +1353,6 @@ impl Command {
     /// Defaults to current terminal width when `wrap_help` feature flag is enabled.  If current
     /// width cannot be determined, the default is 100.
     ///
-    /// **`unstable-v5` feature**: Defaults to unbound, being subject to
-    /// [`Command::max_term_width`].
-    ///
     /// <div class="warning">
     ///
     /// **NOTE:** This setting applies globally and *not* on a per-command basis.
@@ -1401,7 +1376,6 @@ impl Command {
     /// ```
     #[inline]
     #[must_use]
-    #[cfg(any(not(feature = "unstable-v5"), feature = "wrap_help"))]
     pub fn term_width(mut self, width: usize) -> Self {
         self.app_ext.set(TermWidth(width));
         self
@@ -1413,8 +1387,6 @@ impl Command {
     /// terminal's width will be used.  See [`Command::term_width`] for more details.
     ///
     /// Using `0` will ignore this, always respecting [`Command::term_width`] (default).
-    ///
-    /// **`unstable-v5` feature**: Defaults to 100.
     ///
     /// <div class="warning">
     ///
@@ -1439,7 +1411,6 @@ impl Command {
     /// ```
     #[inline]
     #[must_use]
-    #[cfg(any(not(feature = "unstable-v5"), feature = "wrap_help"))]
     pub fn max_term_width(mut self, width: usize) -> Self {
         self.app_ext.set(MaxTermWidth(width));
         self
@@ -1733,10 +1704,6 @@ impl Command {
     }
 
     #[doc(hidden)]
-    #[cfg_attr(
-        feature = "deprecated",
-        deprecated(since = "4.0.0", note = "This is now the default")
-    )]
     pub fn dont_collapse_args_in_usage(self, _yes: bool) -> Self {
         self
     }
@@ -1924,14 +1891,6 @@ impl Command {
     ///
     /// <div class="warning">
     ///
-    /// **TIP:** Use `clap`s convenience macro [`crate_authors!`] to
-    /// automatically set your application's author(s) to the same thing as your
-    /// crate at compile time.
-    ///
-    /// </div>
-    ///
-    /// <div class="warning">
-    ///
     /// **NOTE:** A custom [`help_template`][Command::help_template] is needed for author to show
     /// up.
     ///
@@ -1955,8 +1914,6 @@ impl Command {
     /// Sets the program's description for the short help (`-h`).
     ///
     /// If [`Command::long_about`] is not specified, this message will be displayed for `--help`.
-    ///
-    /// See also [`crate_description!`](crate::crate_description!).
     ///
     /// # Examples
     ///
@@ -2098,14 +2055,6 @@ impl Command {
     ///
     /// If [`Command::long_version`] is not specified, this message will be displayed for `--version`.
     ///
-    /// <div class="warning">
-    ///
-    /// **TIP:** Use `clap`s convenience macro [`crate_version!`] to
-    /// automatically set your application's version to the same thing as your
-    /// crate at compile time.
-    ///
-    /// </div>
-    ///
     /// # Examples
     ///
     /// ```rust
@@ -2124,14 +2073,6 @@ impl Command {
     /// Sets the version for the long version (`--version`) and help messages.
     ///
     /// If [`Command::version`] is not specified, this message will be displayed for `-V`.
-    ///
-    /// <div class="warning">
-    ///
-    /// **TIP:** Use `clap`s convenience macro [`crate_version!`] to
-    /// automatically set your application's version to the same thing as your
-    /// crate at compile time.
-    ///
-    /// </div>
     ///
     /// # Examples
     ///
@@ -2417,10 +2358,6 @@ impl Command {
     }
 
     #[doc(hidden)]
-    #[cfg_attr(
-        feature = "deprecated",
-        deprecated(since = "4.0.0", note = "Replaced with `Arg::allow_hyphen_values`")
-    )]
     pub fn allow_hyphen_values(self, yes: bool) -> Self {
         if yes {
             self.setting(AppSettings::AllowHyphenValues)
@@ -2430,10 +2367,6 @@ impl Command {
     }
 
     #[doc(hidden)]
-    #[cfg_attr(
-        feature = "deprecated",
-        deprecated(since = "4.0.0", note = "Replaced with `Arg::allow_negative_numbers`")
-    )]
     pub fn allow_negative_numbers(self, yes: bool) -> Self {
         if yes {
             self.setting(AppSettings::AllowNegativeNumbers)
@@ -2443,10 +2376,6 @@ impl Command {
     }
 
     #[doc(hidden)]
-    #[cfg_attr(
-        feature = "deprecated",
-        deprecated(since = "4.0.0", note = "Replaced with `Arg::trailing_var_arg`")
-    )]
     pub fn trailing_var_arg(self, yes: bool) -> Self {
         if yes {
             self.setting(AppSettings::TrailingVarArg)
@@ -4177,10 +4106,6 @@ impl Command {
     }
 
     #[doc(hidden)]
-    #[cfg_attr(
-        feature = "deprecated",
-        deprecated(since = "4.0.0", note = "This is now the default")
-    )]
     pub fn is_dont_collapse_args_in_usage_set(&self) -> bool {
         true
     }
@@ -4201,34 +4126,16 @@ impl Command {
     }
 
     #[doc(hidden)]
-    #[cfg_attr(
-        feature = "deprecated",
-        deprecated(
-            since = "4.0.0",
-            note = "Replaced with `Arg::is_allow_hyphen_values_set`"
-        )
-    )]
     pub(crate) fn is_allow_hyphen_values_set(&self) -> bool {
         self.is_set(AppSettings::AllowHyphenValues)
     }
 
     #[doc(hidden)]
-    #[cfg_attr(
-        feature = "deprecated",
-        deprecated(
-            since = "4.0.0",
-            note = "Replaced with `Arg::is_allow_negative_numbers_set`"
-        )
-    )]
     pub fn is_allow_negative_numbers_set(&self) -> bool {
         self.is_set(AppSettings::AllowNegativeNumbers)
     }
 
     #[doc(hidden)]
-    #[cfg_attr(
-        feature = "deprecated",
-        deprecated(since = "4.0.0", note = "Replaced with `Arg::is_trailing_var_arg_set`")
-    )]
     pub fn is_trailing_var_arg_set(&self) -> bool {
         self.is_set(AppSettings::TrailingVarArg)
     }
@@ -4296,18 +4203,6 @@ impl Command {
     /// Report whether [`Command::multicall`] is set
     pub fn is_multicall_set(&self) -> bool {
         self.is_set(AppSettings::Multicall)
-    }
-
-    /// Access an [`CommandExt`]
-    #[cfg(feature = "unstable-ext")]
-    pub fn get<T: CommandExt + Extension>(&self) -> Option<&T> {
-        self.ext.get::<T>()
-    }
-
-    /// Remove an [`CommandExt`]
-    #[cfg(feature = "unstable-ext")]
-    pub fn remove<T: CommandExt + Extension>(mut self) -> Option<T> {
-        self.ext.remove::<T>()
     }
 }
 
@@ -5231,8 +5126,6 @@ impl Default for Command {
             external_value_parser: Default::default(),
             long_help_exists: false,
             deferred: None,
-            #[cfg(feature = "unstable-ext")]
-            ext: Default::default(),
             app_ext: Default::default(),
         }
     }
@@ -5257,10 +5150,6 @@ impl fmt::Display for Command {
         write!(f, "{}", self.name)
     }
 }
-
-/// User-provided data that can be attached to an [`Arg`]
-#[cfg(feature = "unstable-ext")]
-pub trait CommandExt: Extension {}
 
 #[allow(dead_code)] // atm dependent on features enabled
 pub(crate) trait AppExt: Extension {}

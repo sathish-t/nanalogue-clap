@@ -1,34 +1,10 @@
-#[cfg(feature = "string")]
-use std::borrow::Cow;
-
 /// A UTF-8-encoded fixed string
-///
-/// <div class="warning">
-///
-/// **NOTE:** To support dynamic values (i.e. `String`), enable the `string`
-/// feature
-///
-/// </div>
 #[derive(Default, Clone, Eq, PartialEq, PartialOrd, Ord, Hash)]
 pub struct Str {
     name: Inner,
 }
 
 impl Str {
-    #[cfg(feature = "string")]
-    pub(crate) fn from_string(name: String) -> Self {
-        Self {
-            name: Inner::from_string(name),
-        }
-    }
-
-    #[cfg(feature = "string")]
-    pub(crate) fn from_ref(name: &str) -> Self {
-        Self {
-            name: Inner::from_ref(name),
-        }
-    }
-
     pub(crate) fn from_static_ref(name: &'static str) -> Self {
         Self {
             name: Inner::from_static_ref(name),
@@ -51,20 +27,6 @@ impl From<&'_ Str> for Str {
     }
 }
 
-#[cfg(feature = "string")]
-impl From<String> for Str {
-    fn from(name: String) -> Self {
-        Self::from_string(name)
-    }
-}
-
-#[cfg(feature = "string")]
-impl From<&'_ String> for Str {
-    fn from(name: &'_ String) -> Self {
-        Self::from_ref(name.as_str())
-    }
-}
-
 impl From<&'static str> for Str {
     fn from(name: &'static str) -> Self {
         Self::from_static_ref(name)
@@ -74,16 +36,6 @@ impl From<&'static str> for Str {
 impl From<&'_ &'static str> for Str {
     fn from(name: &'_ &'static str) -> Self {
         Self::from_static_ref(name)
-    }
-}
-
-#[cfg(feature = "string")]
-impl From<Cow<'static, str>> for Str {
-    fn from(cow: Cow<'static, str>) -> Self {
-        match cow {
-            Cow::Borrowed(s) => Self::from(s),
-            Cow::Owned(s) => Self::from(s),
-        }
     }
 }
 
@@ -234,44 +186,6 @@ impl PartialEq<Str> for String {
     }
 }
 
-#[cfg(feature = "string")]
-pub(crate) mod inner {
-    #[derive(Clone)]
-    pub(crate) enum Inner {
-        Static(&'static str),
-        Owned(Box<str>),
-    }
-
-    impl Inner {
-        pub(crate) fn from_string(name: String) -> Self {
-            Self::Owned(name.into_boxed_str())
-        }
-
-        pub(crate) fn from_ref(name: &str) -> Self {
-            Self::Owned(Box::from(name))
-        }
-
-        pub(crate) fn from_static_ref(name: &'static str) -> Self {
-            Self::Static(name)
-        }
-
-        pub(crate) fn as_str(&self) -> &str {
-            match self {
-                Self::Static(s) => s,
-                Self::Owned(s) => s.as_ref(),
-            }
-        }
-
-        pub(crate) fn into_string(self) -> String {
-            match self {
-                Self::Static(s) => s.to_owned(),
-                Self::Owned(s) => s.into(),
-            }
-        }
-    }
-}
-
-#[cfg(not(feature = "string"))]
 pub(crate) mod inner {
     #[derive(Clone)]
     pub(crate) struct Inner(pub(crate) &'static str);
@@ -323,27 +237,5 @@ impl std::hash::Hash for Inner {
     #[inline]
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.as_str().hash(state);
-    }
-}
-
-#[cfg(test)]
-#[cfg(feature = "string")]
-mod tests {
-    use super::*;
-
-    #[test]
-    #[cfg(feature = "string")]
-    fn from_cow_borrowed() {
-        let cow = Cow::Borrowed("hello");
-        let str = Str::from(cow);
-        assert_eq!(str, Str::from("hello"));
-    }
-
-    #[test]
-    #[cfg(feature = "string")]
-    fn from_cow_owned() {
-        let cow = Cow::Owned("world".to_owned());
-        let str = Str::from(cow);
-        assert_eq!(str, Str::from("world"));
     }
 }

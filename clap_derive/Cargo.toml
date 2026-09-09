@@ -34,16 +34,10 @@ syn = { version = "3.0.2", features = ["full"] }
 quote = "1.0.45"
 proc-macro2 = "1.0.106"
 heck = "0.5.0"
-pulldown-cmark = { version = "0.13.3", default-features = false, optional = true}
-anstyle = {version ="1.0.14", optional = true}
 
 [features]
 default = []
 debug = []
-unstable-v5 = ["deprecated"]
-deprecated = []
-raw-deprecated = ["deprecated"]
-unstable-markdown = ["dep:pulldown-cmark", "dep:anstyle"]
 
 [lints]
 workspace = true

@@ -1,8 +1,4 @@
 // Std
-#[cfg(feature = "env")]
-use std::env;
-#[cfg(feature = "env")]
-use std::ffi::OsString;
 use std::{
     cmp::{Ord, Ordering},
     fmt::{self, Display, Formatter},
@@ -23,8 +19,6 @@ use crate::builder::Str;
 use crate::builder::StyledStr;
 use crate::builder::Styles;
 use crate::builder::ValueRange;
-#[cfg(feature = "unstable-ext")]
-use crate::builder::ext::Extension;
 use crate::builder::ext::Extensions;
 use crate::util::AnyValueId;
 
@@ -83,8 +77,6 @@ pub struct Arg {
     pub(crate) default_vals: Vec<OsStr>,
     pub(crate) default_vals_ifs: Vec<(Id, ArgPredicate, Option<Vec<OsStr>>)>,
     pub(crate) default_missing_vals: Vec<OsStr>,
-    #[cfg(feature = "env")]
-    pub(crate) env: Option<(OsStr, Option<OsString>)>,
     pub(crate) terminator: Option<Str>,
     pub(crate) index: Option<usize>,
     pub(crate) help_heading: Option<Option<Str>>,
@@ -940,14 +932,6 @@ impl Arg {
         self.settings.unset(setting);
         self
     }
-
-    /// Extend [`Arg`] with [`ArgExt`] data
-    #[cfg(feature = "unstable-ext")]
-    #[allow(clippy::should_implement_trait)]
-    pub fn add<T: ArgExt + Extension>(mut self, tagged: T) -> Self {
-        self.ext.set(tagged);
-        self
-    }
 }
 
 /// # Value Handling
@@ -1212,10 +1196,6 @@ impl Arg {
     }
 
     #[doc(hidden)]
-    #[cfg_attr(
-        feature = "deprecated",
-        deprecated(since = "4.0.0", note = "Replaced with `Arg::num_args`")
-    )]
     pub fn number_of_values(self, qty: usize) -> Self {
         self.num_args(qty)
     }
@@ -1413,12 +1393,6 @@ impl Arg {
     /// <div class="warning">
     ///
     /// **NOTE:** Setting this requires [taking values][Arg::num_args]
-    ///
-    /// </div>
-    ///
-    /// <div class="warning">
-    ///
-    /// **NOTE:** To do unicode case folding, enable the `unicode` feature flag.
     ///
     /// </div>
     ///
@@ -1639,10 +1613,6 @@ impl Arg {
     }
 
     #[doc(hidden)]
-    #[cfg_attr(
-        feature = "deprecated",
-        deprecated(since = "4.0.0", note = "Replaced with `Arg::value_delimiter`")
-    )]
     pub fn use_value_delimiter(mut self, yes: bool) -> Self {
         if yes {
             self.val_delim.get_or_insert(',');
@@ -1860,10 +1830,6 @@ impl Arg {
     #[inline]
     #[must_use]
     #[doc(hidden)]
-    #[cfg_attr(
-        feature = "deprecated",
-        deprecated(since = "4.0.0", note = "Replaced with `Arg::default_value`")
-    )]
     pub fn default_value_os(self, val: impl Into<OsStr>) -> Self {
         self.default_values([val])
     }
@@ -1883,10 +1849,6 @@ impl Arg {
     #[inline]
     #[must_use]
     #[doc(hidden)]
-    #[cfg_attr(
-        feature = "deprecated",
-        deprecated(since = "4.0.0", note = "Replaced with `Arg::default_values`")
-    )]
     pub fn default_values_os(self, vals: impl IntoIterator<Item = impl Into<OsStr>>) -> Self {
         self.default_values(vals)
     }
@@ -2036,190 +1998,6 @@ impl Arg {
     ) -> Self {
         self.default_missing_vals = vals.into_iter().map(|s| s.into()).collect();
         self
-    }
-
-    /// Read from `name` environment variable when argument is not present.
-    ///
-    /// If it is not present in the environment, then default
-    /// rules will apply.
-    ///
-    /// If user sets the argument in the environment:
-    /// - When [`Arg::action(ArgAction::Set)`] is not set, the flag is considered raised.
-    /// - When [`Arg::action(ArgAction::Set)`] is set,
-    ///   [`ArgMatches::get_one`][crate::ArgMatches::get_one] will
-    ///   return value of the environment variable.
-    ///
-    /// If user doesn't set the argument in the environment:
-    /// - When [`Arg::action(ArgAction::Set)`] is not set, the flag is considered off.
-    /// - When [`Arg::action(ArgAction::Set)`] is set,
-    ///   [`ArgMatches::get_one`][crate::ArgMatches::get_one] will
-    ///   return the default specified.
-    ///
-    /// Like with command-line values, this will be split by [`Arg::value_delimiter`].
-    ///
-    /// # Examples
-    ///
-    /// In this example, we show the variable coming from the environment:
-    ///
-    /// ```rust
-    /// # use clap_builder as clap;
-    /// # use std::env;
-    /// # use clap::{Command, Arg, ArgAction};
-    /// # unsafe {
-    /// env::set_var("MY_FLAG", "env");
-    /// # }
-    ///
-    /// let m = Command::new("prog")
-    ///     .arg(Arg::new("flag")
-    ///         .long("flag")
-    ///         .env("MY_FLAG")
-    ///         .action(ArgAction::Set))
-    ///     .get_matches_from(vec![
-    ///         "prog"
-    ///     ]);
-    ///
-    /// assert_eq!(m.get_one::<String>("flag").unwrap(), "env");
-    /// ```
-    ///
-    /// In this example, because `prog` is a flag that accepts an optional, case-insensitive
-    /// boolean literal.
-    ///
-    /// Note that the value parser controls how flags are parsed.  In this case we've selected
-    /// [`FalseyValueParser`][crate::builder::FalseyValueParser].  A `false` literal is `n`, `no`,
-    /// `f`, `false`, `off` or `0`.  An absent environment variable will also be considered as
-    /// `false`.  Anything else will considered as `true`.
-    ///
-    /// ```rust
-    /// # use clap_builder as clap;
-    /// # use std::env;
-    /// # use clap::{Command, Arg, ArgAction};
-    /// # use clap::builder::FalseyValueParser;
-    ///
-    /// # unsafe {
-    /// env::set_var("TRUE_FLAG", "true");
-    /// env::set_var("FALSE_FLAG", "0");
-    /// # }
-    ///
-    /// let m = Command::new("prog")
-    ///     .arg(Arg::new("true_flag")
-    ///         .long("true_flag")
-    ///         .action(ArgAction::SetTrue)
-    ///         .value_parser(FalseyValueParser::new())
-    ///         .env("TRUE_FLAG"))
-    ///     .arg(Arg::new("false_flag")
-    ///         .long("false_flag")
-    ///         .action(ArgAction::SetTrue)
-    ///         .value_parser(FalseyValueParser::new())
-    ///         .env("FALSE_FLAG"))
-    ///     .arg(Arg::new("absent_flag")
-    ///         .long("absent_flag")
-    ///         .action(ArgAction::SetTrue)
-    ///         .value_parser(FalseyValueParser::new())
-    ///         .env("ABSENT_FLAG"))
-    ///     .get_matches_from(vec![
-    ///         "prog"
-    ///     ]);
-    ///
-    /// assert!(m.get_flag("true_flag"));
-    /// assert!(!m.get_flag("false_flag"));
-    /// assert!(!m.get_flag("absent_flag"));
-    /// ```
-    ///
-    /// In this example, we show the variable coming from an option on the CLI:
-    ///
-    /// ```rust
-    /// # use clap_builder as clap;
-    /// # use std::env;
-    /// # use clap::{Command, Arg, ArgAction};
-    ///
-    /// # unsafe {
-    /// env::set_var("MY_FLAG", "env");
-    /// # }
-    ///
-    /// let m = Command::new("prog")
-    ///     .arg(Arg::new("flag")
-    ///         .long("flag")
-    ///         .env("MY_FLAG")
-    ///         .action(ArgAction::Set))
-    ///     .get_matches_from(vec![
-    ///         "prog", "--flag", "opt"
-    ///     ]);
-    ///
-    /// assert_eq!(m.get_one::<String>("flag").unwrap(), "opt");
-    /// ```
-    ///
-    /// In this example, we show the variable coming from the environment even with the
-    /// presence of a default:
-    ///
-    /// ```rust
-    /// # use clap_builder as clap;
-    /// # use std::env;
-    /// # use clap::{Command, Arg, ArgAction};
-    ///
-    /// # unsafe {
-    /// env::set_var("MY_FLAG", "env");
-    /// # }
-    ///
-    /// let m = Command::new("prog")
-    ///     .arg(Arg::new("flag")
-    ///         .long("flag")
-    ///         .env("MY_FLAG")
-    ///         .action(ArgAction::Set)
-    ///         .default_value("default"))
-    ///     .get_matches_from(vec![
-    ///         "prog"
-    ///     ]);
-    ///
-    /// assert_eq!(m.get_one::<String>("flag").unwrap(), "env");
-    /// ```
-    ///
-    /// In this example, we show the use of multiple values in a single environment variable:
-    ///
-    /// ```rust
-    /// # use clap_builder as clap;
-    /// # use std::env;
-    /// # use clap::{Command, Arg, ArgAction};
-    ///
-    /// # unsafe {
-    /// env::set_var("MY_FLAG_MULTI", "env1,env2");
-    /// # }
-    ///
-    /// let m = Command::new("prog")
-    ///     .arg(Arg::new("flag")
-    ///         .long("flag")
-    ///         .env("MY_FLAG_MULTI")
-    ///         .action(ArgAction::Set)
-    ///         .num_args(1..)
-    ///         .value_delimiter(','))
-    ///     .get_matches_from(vec![
-    ///         "prog"
-    ///     ]);
-    ///
-    /// assert_eq!(m.get_many::<String>("flag").unwrap().collect::<Vec<_>>(), vec!["env1", "env2"]);
-    /// ```
-    /// [`Arg::action(ArgAction::Set)`]: Arg::action()
-    /// [`Arg::value_delimiter(',')`]: Arg::value_delimiter()
-    #[cfg(feature = "env")]
-    #[inline]
-    #[must_use]
-    pub fn env(mut self, name: impl IntoResettable<OsStr>) -> Self {
-        if let Some(name) = name.into_resettable().into_option() {
-            let value = env::var_os(&name);
-            self.env = Some((name, value));
-        } else {
-            self.env = None;
-        }
-        self
-    }
-
-    #[cfg(feature = "env")]
-    #[doc(hidden)]
-    #[cfg_attr(
-        feature = "deprecated",
-        deprecated(since = "4.0.0", note = "Replaced with `Arg::env`")
-    )]
-    pub fn env_os(self, name: impl Into<OsStr>) -> Self {
-        self.env(name)
     }
 }
 
@@ -2608,67 +2386,6 @@ impl Arg {
             self.setting(ArgSettings::HideDefaultValue)
         } else {
             self.unset_setting(ArgSettings::HideDefaultValue)
-        }
-    }
-
-    /// Do not display in help the environment variable name.
-    ///
-    /// This is useful when the variable option is explained elsewhere in the help text.
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// # use clap_builder as clap;
-    /// # use clap::{Command, Arg, ArgAction};
-    /// let m = Command::new("prog")
-    ///     .arg(Arg::new("mode")
-    ///         .long("mode")
-    ///         .env("MODE")
-    ///         .action(ArgAction::Set)
-    ///         .hide_env(true));
-    /// ```
-    ///
-    /// If we were to run the above program with `--help` the `[env: MODE]` portion of the help
-    /// text would be omitted.
-    #[cfg(feature = "env")]
-    #[inline]
-    #[must_use]
-    pub fn hide_env(self, yes: bool) -> Self {
-        if yes {
-            self.setting(ArgSettings::HideEnv)
-        } else {
-            self.unset_setting(ArgSettings::HideEnv)
-        }
-    }
-
-    /// Do not display in help any values inside the associated ENV variables for the argument.
-    ///
-    /// This is useful when ENV vars contain sensitive values.
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// # use clap_builder as clap;
-    /// # use clap::{Command, Arg, ArgAction};
-    /// let m = Command::new("connect")
-    ///     .arg(Arg::new("host")
-    ///         .long("host")
-    ///         .env("CONNECT")
-    ///         .action(ArgAction::Set)
-    ///         .hide_env_values(true));
-    ///
-    /// ```
-    ///
-    /// If we were to run the above program with `$ CONNECT=super_secret connect --help` the
-    /// `[default: CONNECT=super_secret]` portion of the help text would be omitted.
-    #[cfg(feature = "env")]
-    #[inline]
-    #[must_use]
-    pub fn hide_env_values(self, yes: bool) -> Self {
-        if yes {
-            self.setting(ArgSettings::HideEnvValues)
-        } else {
-            self.unset_setting(ArgSettings::HideEnvValues)
         }
     }
 
@@ -3123,10 +2840,6 @@ impl Arg {
 
     #[must_use]
     #[doc(hidden)]
-    #[cfg_attr(
-        feature = "deprecated",
-        deprecated(since = "4.0.0", note = "Replaced with `Arg::default_value_if`")
-    )]
     pub fn default_value_if_os(
         self,
         arg_id: impl Into<Id>,
@@ -3267,10 +2980,6 @@ impl Arg {
 
     #[must_use]
     #[doc(hidden)]
-    #[cfg_attr(
-        feature = "deprecated",
-        deprecated(since = "4.0.0", note = "Replaced with `Arg::default_value_ifs`")
-    )]
     pub fn default_value_ifs_os(
         self,
         ifs: impl IntoIterator<
@@ -3927,10 +3636,6 @@ impl Arg {
     }
 
     #[doc(hidden)]
-    #[cfg_attr(
-        feature = "deprecated",
-        deprecated(since = "4.0.0", note = "Replaced with `Arg::requires_ifs`")
-    )]
     pub fn requires_all(self, ids: impl IntoIterator<Item = impl Into<Id>>) -> Self {
         self.requires_ifs(ids.into_iter().map(|id| (ArgPredicate::IsPresent, id)))
     }
@@ -4385,22 +4090,6 @@ impl Arg {
         })
     }
 
-    /// Get the environment variable name specified for this argument, if any
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// # use clap_builder as clap;
-    /// # use std::ffi::OsStr;
-    /// # use clap::Arg;
-    /// let arg = Arg::new("foo").env("ENVIRONMENT");
-    /// assert_eq!(arg.get_env(), Some(OsStr::new("ENVIRONMENT")));
-    /// ```
-    #[cfg(feature = "env")]
-    pub fn get_env(&self) -> Option<&std::ffi::OsStr> {
-        self.env.as_ref().map(|x| x.0.as_os_str())
-    }
-
     /// Get the default values specified for this argument, if any
     ///
     /// # Examples
@@ -4513,18 +4202,6 @@ impl Arg {
         self.is_set(ArgSettings::HidePossibleValues)
     }
 
-    /// Report whether [`Arg::hide_env`] is set
-    #[cfg(feature = "env")]
-    pub fn is_hide_env_set(&self) -> bool {
-        self.is_set(ArgSettings::HideEnv)
-    }
-
-    /// Report whether [`Arg::hide_env_values`] is set
-    #[cfg(feature = "env")]
-    pub fn is_hide_env_values_set(&self) -> bool {
-        self.is_set(ArgSettings::HideEnvValues)
-    }
-
     /// Report whether [`Arg::hide_short_help`] is set
     pub fn is_hide_short_help_set(&self) -> bool {
         self.is_set(ArgSettings::HiddenShortHelp)
@@ -4558,18 +4235,6 @@ impl Arg {
     /// Reports whether [`Arg::ignore_case`] is set
     pub fn is_ignore_case_set(&self) -> bool {
         self.is_set(ArgSettings::IgnoreCase)
-    }
-
-    /// Access an [`ArgExt`]
-    #[cfg(feature = "unstable-ext")]
-    pub fn get<T: ArgExt + Extension>(&self) -> Option<&T> {
-        self.ext.get::<T>()
-    }
-
-    /// Remove an [`ArgExt`]
-    #[cfg(feature = "unstable-ext")]
-    pub fn remove<T: ArgExt + Extension>(mut self) -> Option<T> {
-        self.ext.remove::<T>()
     }
 }
 
@@ -4828,18 +4493,9 @@ impl fmt::Debug for Arg {
             .field("default_missing_vals", &self.default_missing_vals)
             .field("ext", &self.ext);
 
-        #[cfg(feature = "env")]
-        {
-            ds = ds.field("env", &self.env);
-        }
-
         ds.finish()
     }
 }
-
-/// User-provided data that can be attached to an [`Arg`]
-#[cfg(feature = "unstable-ext")]
-pub trait ArgExt: Extension {}
 
 // Flags
 #[cfg(test)]

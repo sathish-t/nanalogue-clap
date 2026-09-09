@@ -120,11 +120,11 @@ rust-version.workspace = true
 include.workspace = true
 
 [package.metadata.docs.rs]
-features = ["unstable-doc"]
+features = ["derive", "wrap_help"]
 rustdoc-args = ["--generate-link-to-definition"]
 
 [package.metadata.playground]
-features = ["unstable-doc"]
+features = ["derive", "wrap_help"]
 
 [package.metadata.release]
 shared-version = true
@@ -150,7 +150,6 @@ default = [
   "suggestions",
 ]
 debug = ["clap_builder/debug", "clap_derive?/debug"] # Enables debug messages
-unstable-doc = ["clap_builder/unstable-doc", "derive"] # for docs.rs
 
 # Used in default
 std = ["clap_builder/std"] # support for no_std in a backwards-compatible way
@@ -161,20 +160,8 @@ error-context = ["clap_builder/error-context"]
 suggestions = ["clap_builder/suggestions"]
 
 # Optional
-deprecated = ["clap_builder/deprecated", "clap_derive?/deprecated"] # Guided experience to prepare for next breaking release (at different stages of development, this may become default)
 derive = ["dep:clap_derive"]
-cargo = ["clap_builder/cargo"] # Disable if you're not using Cargo, enables Cargo-env-var-dependent macros
 wrap_help = ["clap_builder/wrap_help"]
-env = ["clap_builder/env"] # Use environment variables during arg parsing
-unicode = ["clap_builder/unicode"]  # Support for unicode characters in arguments and help messages
-string = ["clap_builder/string"]  # Allow runtime generated strings
-
-# In-work features
-unstable-v5 = ["clap_builder/unstable-v5", "clap_derive?/unstable-v5", "deprecated"]
-unstable-ext = ["clap_builder/unstable-ext"]
-unstable-styles = ["clap_builder/unstable-styles"]  # deprecated
-unstable-derive-ui-tests = []
-unstable-markdown = ["clap_derive/unstable-markdown"]
 
 [lib]
 bench = false
@@ -188,12 +175,8 @@ trybuild = "1.0.116"
 rustversion = "1.0.22"
 # Cutting out `filesystem` feature
 trycmd = { version = "1.2.0", default-features = false, features = ["color-auto", "diff", "examples"] }
-jiff = "0.2.23"
 snapbox = { version = "1.2.0", features = ["term-svg"] }
-shlex = "2.0.0"
 automod = "1.0.16"
-clap-cargo = { version = "0.15.2", default-features = false }
-semver = "1.0.27"
 
 [profile.test]
 opt-level = 1

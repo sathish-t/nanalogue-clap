@@ -2,7 +2,6 @@
 #[cfg(feature = "help")]
 #[cfg(feature = "error-context")]
 #[cfg(feature = "usage")]
-#[cfg(feature = "env")]
 fn ui_tests() {
     let t = trycmd::TestCases::new();
     let features = [
@@ -22,19 +21,8 @@ fn ui_tests() {
         // Optional
         #[cfg(feature = "derive")]
         "derive",
-        #[cfg(feature = "cargo")]
-        "cargo",
         #[cfg(feature = "wrap_help")]
         "wrap_help",
-        #[cfg(feature = "env")]
-        "env",
-        #[cfg(feature = "unicode")]
-        "unicode",
-        #[cfg(feature = "string")]
-        "string",
-        // In-work
-        //#[cfg(feature = "unstable-v5")]  // Currently has failures
-        //"unstable-v5",
     ]
     .join(" ");
     t.register_bins(trycmd::cargo::compile_examples(["--features", &features]).unwrap());
